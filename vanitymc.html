@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>FTop VanityMC</title>
+    <link rel="stylesheet" type="text/css" href="styles/vanity.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+  </head>
+  <body>
+
+    <nav>
+      <p class="bggradient">Factions Top</p>
+      <ul>
+        <li><a href="index.html" class="beforeelement">Home</a></li>
+        <li><a href="#" class="beforeelement">ArkhamNetwork ⮟</a>
+          <ul>
+            <li><a href="/arkhamnetwork.html">Salty (SOTW: Sunday 20th May 2018)</a></li>
+          </ul>
+        </li>
+        <li><a href="#" class="beforeelement">VanityMC ⮟</a>
+          <ul>
+            <li><a href="/vanitymc.html">RIP (SOTW: Saturday 26th May 2018)</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+
+    <section class="VMCIntro">
+      <div class="VMCInner">
+        <div class="VMCContent">
+          <div id="tableResults"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="PreloadFab">
+      <div class="inner">
+        <div class="content">
+            <div class="spinner"></div>
+            <h1>Fetching ftop values</h1>
+        </div>
+      </div>
+    </section>
+
+
+    <script type="text/javascript">
+      $('.VMCIntro').toggle();
+    </script>
+
+
+    <script type="text/javascript">
+      let delay = ( function(){
+        let timer = 0;
+        return function(callback, ms){
+          clearTimeout(timer);
+          timer = setTimeout(callback, ms);
+        };
+      })();
+
+      delay(function(){
+        $('.VMCIntro').toggle();
+        $('.PreloadFab').toggle();
+      }, 1000);
+
+      let fetchJsonInfo = function(){
+
+        $.getJSON('JSON/VanityValues.json', function(data){
+          //For every day in the json file
+          let dayCount = 0;
+          for(let i = 0; i < data.length; i++){
+            //create a new table
+            let tableitem = document.createElement("table");
+
+            //create the header displaying the date
+            let newtr = document.createElement("tr");
+            var children = tableitem.children.length + 1;
+            let newtrtd = document.createElement("td");
+            newtrtd.setAttribute("class", "tableHeader");
+            newtrtd.setAttribute("colspan", "5");
+            let newtrtdh1 = document.createElement("h1");
+            newtrtdh1.textContent = "Day: " + data[i].Day + " (" + data[i].Date + ")";
+            newtrtd.appendChild(newtrtdh1);
+            newtr.appendChild(newtrtd);
+            tableitem.appendChild(newtr);
+
+            //create the info header
+            let newtr2 = document.createElement("tr");
+            var children = tableitem.children.length + 1;
+            let newtr2th1 = document.createElement("th");
+            newtr2th1.textContent = "Pos";
+            let newtr2th2 = document.createElement("th");
+            newtr2th2.textContent = "Name";
+            let newtr2th3 = document.createElement("th");
+            newtr2th3.textContent = "Value";
+            let newtr2th4 = document.createElement("th");
+            newtr2th4.textContent = "Delta($)";
+            let newtr2th5 = document.createElement("th");
+            newtr2th5.textContent = "Delta(%)";
+            newtr2.appendChild(newtr2th1);
+            newtr2.appendChild(newtr2th2);
+            newtr2.appendChild(newtr2th3);
+            newtr2.appendChild(newtr2th4);
+            newtr2.appendChild(newtr2th5);
+            tableitem.appendChild(newtr2);
+
+            let poscount = 1;
+            for(let j = 0; j < data[i].Data.length; j++){
+              let newtr3 = document.createElement("tr");
+
+              //Display Position
+              let newtr3td1 = document.createElement("td");
+              newtr3td1.textContent = "#" + poscount;
+              newtr3.appendChild(newtr3td1);
+
+              //Display Name
+              let newtr3td2 = document.createElement("td");
+              newtr3td2.textContent = data[i].Data[j].name;
+              newtr3.appendChild(newtr3td2);
+
+              //Display Value
+              let newtr3td3 = document.createElement("td");
+              //Currency formatting regex by https://stackoverflow.com/questions/149055/how-can-i-format-numbers-as-dollars-currency-string-in-javascript
+              newtr3td3.textContent = "$" + (data[i].Data[j].value).toFixed().replace(/(\d)(?=(\d{3})+(,|$))/g, '$1.');
+              newtr3.appendChild(newtr3td3);
+
+
+
+              if(!(dayCount === 0)){
+                let prev = true;
+                for(let k = 0; k < data[i-1].Data.length; k++){
+                  if(data[i-1].Data[k].name === data[i].Data[j].name){
+                    let deltadollar = data[i].Data[j].value - data[i-1].Data[k].value;
+                    let deltapercent = (data[i].Data[j].value) / (data[i-1].Data[k].value) * 100 - 100;
+
+                    let bgcolorvar = "";
+                    if(deltadollar > 0){
+                      bgcolorvar = "#ccffcc";
+                    }else if(deltadollar < 0){
+                      bgcolorvar = "#ffcccc";
+                    }else{
+                      bgcolorvar = "#ffffcc";
+                    }
+
+                    let newtr3td4 = document.createElement("td");
+                    newtr3td4.style.backgroundColor = bgcolorvar;
+                    newtr3td4.textContent = "$" + deltadollar.toFixed().replace(/(\d)(?=(\d{3})+(,|$))/g, '$1.');
+                    newtr3.appendChild(newtr3td4);
+
+                    let newtr3td5 = document.createElement("td");
+                    newtr3td5.style.backgroundColor = bgcolorvar;
+                    newtr3td5.textContent = Math.round(deltapercent * 10) / 10;
+                    newtr3.appendChild(newtr3td5);
+                    prev = false;
+                  }
+                }
+                if(prev){
+                  let newtr3td4 = document.createElement("td");
+                  newtr3td4.textContent = "$0";
+                  newtr3td4.style.backgroundColor = "#ffffcc";
+                  newtr3.appendChild(newtr3td4);
+
+                  let newtr3td5 = document.createElement("td");
+                  newtr3td5.textContent = "0";
+                  newtr3td5.style.backgroundColor = "#ffffcc";
+                  newtr3.appendChild(newtr3td5);
+                }
+
+              }else{
+                let newtr3td4 = document.createElement("td");
+                newtr3td4.textContent = "$0";
+                newtr3td4.style.backgroundColor = "#ffffcc";
+                newtr3.appendChild(newtr3td4);
+
+                let newtr3td5 = document.createElement("td");
+                newtr3td5.textContent = "0";
+                newtr3td5.style.backgroundColor = "#ffffcc";
+                newtr3.appendChild(newtr3td5);
+              }
+
+
+              poscount++;
+              tableitem.appendChild(newtr3);
+            }
+
+            $('#tableResults').append(tableitem);
+
+            dayCount++;
+          }
+        });
+      }
+
+      fetchJsonInfo();
+    </script>
+
+  </body>
+</html>
